@@ -7,6 +7,7 @@ type Job struct {
   OutputBucketPath  string
   Status            string
   Video             *Video
+	VideoID						string
   Error             string
   CreatedAt         time.Time
   UpdatedAt         time.Time
