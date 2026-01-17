@@ -1,6 +1,14 @@
 package domain
 
-import "time"
+import (
+	"time"
+
+	"github.com/asaskevich/govalidator"
+)
+
+func init() {
+	govalidator.SetFieldsRequiredByDefault(true)
+}
 
 type Job struct {
   ID                string
@@ -13,3 +21,12 @@ type Job struct {
   UpdatedAt         time.Time
 }
 
+func (job *Job) Validate() error {
+	_, err := govalidator.ValidateStruct(job)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
