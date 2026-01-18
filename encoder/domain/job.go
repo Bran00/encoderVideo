@@ -15,11 +15,11 @@ type Job struct {
 	ID                string		`valid:"uuid"`
 	OutputBucketPath  string		`valid:"notnull"`
 	Status            string		`valid:"notnull"`
-	Video             *Video		`valid:"_"`
-	VideoID						string		`valid:"_"`
-  Error             string		`valid:"_"`
-  CreatedAt         time.Time `valid:"_"`
-  UpdatedAt         time.Time `valid:"_"`
+	Video             *Video		`valid:"-"`
+	VideoID						string		`valid:"-"`
+  Error             string		`valid:"-"`
+  CreatedAt         time.Time `valid:"-"`
+  UpdatedAt         time.Time `valid:"-"`
 }
 
 func NewJob(output string, status string, video *Video) (*Job, error) {
@@ -27,6 +27,7 @@ func NewJob(output string, status string, video *Video) (*Job, error) {
 		OutputBucketPath: output,
 		Status: status,
 		Video: video,
+		VideoID: video.ID,
 	}
 
 	job.prepare()
