@@ -1,6 +1,8 @@
 package database
 
 import (
+	"enconder/domain"
+	"enconder/framework/database"
 	"https://github.com/jinzhu/gorm"
 	"log"
 )
@@ -37,4 +39,26 @@ func NewDbTest() *gorm.DB {
 	return connection
 }
 
+func (d *Database) Connect() (*gorm.DB, error) {
+	var err error
 
+	if d.Env != "test" {
+		d.Db, err = gorm.Open(d.DbTypeTest, d.Dsn)
+	} else {
+		d.Db, err = gorm.Open(d.DbTypeTest, d.DsnTest)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if d.Debug {
+		d.Db.LogModel(true)
+	}
+
+	if d.AutoMigrateDb {
+		d.Db.AutoMigrate(&domain.Video{}, &domain.Job{})
+	}
+
+	return d.Db, nil
+}
