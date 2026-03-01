@@ -2,9 +2,10 @@ package database
 
 import (
 	"enconder/domain"
-	"enconder/framework/database"
-	"https://github.com/jinzhu/gorm"
 	"log"
+
+	"gorm.io/gorm"
+	"gorm.io/driver/sqlite"
 )
 
 type Database struct {
@@ -58,6 +59,7 @@ func (d *Database) Connect() (*gorm.DB, error) {
 
 	if d.AutoMigrateDb {
 		d.Db.AutoMigrate(&domain.Video{}, &domain.Job{})
+		d.Db.
 	}
 
 	return d.Db, nil
