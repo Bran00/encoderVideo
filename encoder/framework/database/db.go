@@ -59,7 +59,6 @@ func (d *Database) Connect() (*gorm.DB, error) {
 
 	if d.AutoMigrateDb {
 		d.Db.AutoMigrate(&domain.Video{}, &domain.Job{})
-		d.Db.
 	}
 
 	return d.Db, nil
