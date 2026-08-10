@@ -5,7 +5,6 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	uuid "github.com/satori/go.uuid"
-	"time"
 )
 
 func init() {
