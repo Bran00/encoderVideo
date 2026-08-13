@@ -12,28 +12,27 @@ func init() {
 }
 
 type Job struct {
-	ID                string		`json:"job_id" valid:"uuid" gorm:"type:uuid;primary_key"`
-	OutputBucketPath  string		`json:"output_bucket_path" valid:"notnull"`
-	Status            string		`json:"status" valid:"notnull"`
-	Video             *Video		`json:"video" valid:"-"`
-	VideoID						string		`json:"-" valid:"-" gorm:"column:video_id;type:uuid;notnull"`
-  Error             string		`json:"-" valid:"-"`
-  CreatedAt         time.Time `json:"created_at" valid:"-"`
-  UpdatedAt         time.Time `json:"updated_at" valid:"-"`
+	ID               string    `json:"job_id" valid:"uuid" gorm:"type:uuid;primary_key"`
+	OutputBucketPath string    `json:"output_bucket_path" valid:"notnull"`
+	Status           string    `json:"status" valid:"notnull"`
+	Video            *Video    `json:"video" valid:"-" gorm:"foreignKey:VideoID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	VideoID          string    `json:"-" valid:"-" gorm:"column:video_id;type:uuid;notnull"`
+	Error            string    `json:"-" valid:"-"`
+	CreatedAt        time.Time `json:"created_at" valid:"-"`
+	UpdatedAt        time.Time `json:"updated_at" valid:"-"`
 }
 
 func NewJob(output string, status string, video *Video) (*Job, error) {
 	job := Job{
 		OutputBucketPath: output,
-		Status: status,
-		Video: video,
-		VideoID: video.ID,
+		Status:           status,
+		Video:            video,
+		VideoID:          video.ID,
 	}
 
 	job.prepare()
 
 	err := job.Validate()
-
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +48,6 @@ func (job *Job) prepare() {
 
 func (job *Job) Validate() error {
 	_, err := govalidator.ValidateStruct(job)
-
 	if err != nil {
 		return err
 	}
