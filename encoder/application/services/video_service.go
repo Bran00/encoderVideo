@@ -44,7 +44,7 @@ func (v *VideoService) Download(bucketName string) error {
 		return err
 	}
 
-	f, err := os.Create(v.Video.ID + ".mp4")
+	f, err := os.Create(os.Getenv("localStoragePath") + "/" + v.Video.ID + ".mp4")
 	if err != nil {
 		return err
 	}
