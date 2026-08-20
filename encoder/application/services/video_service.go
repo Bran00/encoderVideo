@@ -10,7 +10,6 @@ import (
 	"os/exec"
 
 	"cloud.google.com/go/storage"
-	"google.golang.org/genproto/googleapis/devtools/containeranalysis/v1beta1/source"
 )
 
 type VideoService struct {
