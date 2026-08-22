@@ -99,6 +99,15 @@ func (v *VideoService) Download(bucketName string) error {
 		return fmt.Errorf("localStoragePath não configurado")
 	}
 
+	if err := os.MkdirAll(localStoragePath, os.ModePerm); err != nil {
+		return fmt.Errorf(
+			"erro ao criar diretório de armazenamento %s: %w",
+			localStoragePath,
+			err,
+		)
+	}
+
+
 	localFile := filepath.Join(
 		localStoragePath,
 		v.Video.ID+".mp4",

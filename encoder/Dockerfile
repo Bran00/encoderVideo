@@ -1,5 +1,5 @@
 
-FROM golang:1.25.0-alpine3.11
+FROM golang:1.25-alpine
 
 # ============================================================
 # Variáveis do Bento4
@@ -23,7 +23,9 @@ RUN apk add --no-cache \
     wget \
     unzip \
     make \
-    ca-certificates
+    ca-certificates \
+    gcc \
+    musl-dev
 
 # ============================================================
 # Instalação do Bento4
