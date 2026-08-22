@@ -41,4 +41,7 @@ func TestVideoServiceDownload(t *testing.T) {
 
 	err := videoService.Download(os.Getenv("R2_BUCKET"))
 	require.Nil(t, err)
+
+	err = videoService.Fragment()
+	require.Nil(t, err)
 }

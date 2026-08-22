@@ -1,5 +1,4 @@
-
-FROM golang:1.25-alpine
+FROM golang:1.25-bookworm
 
 # ============================================================
 # Variáveis do Bento4
@@ -16,7 +15,7 @@ ENV PATH="${PATH}:${BENTO4_BIN}"
 # Dependências do sistema
 # ============================================================
 
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     ffmpeg \
     bash \
     curl \
@@ -25,15 +24,11 @@ RUN apk add --no-cache \
     make \
     ca-certificates \
     gcc \
-    musl-dev
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # ============================================================
 # Instalação do Bento4
-#
-# O domínio antigo www.bento4.com/downloads não está mais
-# servindo corretamente esse arquivo.
-#
-# O arquivo 1.6.0-641 está disponível em bok.net.
 # ============================================================
 
 WORKDIR /tmp/bento4
@@ -69,4 +64,3 @@ WORKDIR /go/src
 # ============================================================
 
 ENTRYPOINT ["tail", "-f", "/dev/null"]
-
