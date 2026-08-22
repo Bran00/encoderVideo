@@ -1,5 +1,5 @@
 
-FROM golang:1.14.6-alpine3.11
+FROM golang:1.25.0-alpine3.11
 
 # ============================================================
 # Variáveis do Bento4
