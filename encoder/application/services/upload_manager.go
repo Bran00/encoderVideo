@@ -3,9 +3,11 @@ package services
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -42,5 +44,34 @@ func (vu *VideoUpload) UploadObject(
 		Body:   f,
 	})
 
-	return err
+	return nil
+}
+
+func (vu *VideoUpload) loadPaths() error {
+
+	err := filepath.Walk(vu.VideoPath, func(path string, info os.FileInfo, err error) error {
+		
+		if !info.IsDir() {
+			vu.Paths = append(vu.Paths, path)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getClientUpload() (*s3.Client, context.Context, error) {
+	ctx := context.Background()
+
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		return nil, ctx, err
+	}
+
+	client := s3.NewFromConfig(cfg)
+	return client, ctx, err
 }
