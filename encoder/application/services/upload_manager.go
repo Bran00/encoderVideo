@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -120,17 +122,43 @@ func (vu *VideoUpload) uploadWorker(in chan int, returnChan chan string, uploadC
 		returnChan <- ""
 	}
 
-	returnChan <- "uploaded completed"
+	returnChan <- "upload completed"
 }
 
 func getClientUpload() (*s3.Client, context.Context, error) {
 	ctx := context.Background()
 
-	cfg, err := config.LoadDefaultConfig(ctx)
+	accountID := os.Getenv("R2_ACCOUNT_ID")
+	accessKeyID := os.Getenv("R2_ACCESS_KEY_ID")
+	secretAccessKey := os.Getenv("R2_SECRET_ACCESS_KEY")
+
+	endpoint := fmt.Sprintf(
+		"https://%s.r2.cloudflarestorage.com",
+		accountID,
+	)
+
+	r2Credentials := credentials.NewStaticCredentialsProvider(
+		accessKeyID,
+		secretAccessKey,
+		"",
+	)
+
+	cfg, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion("auto"),
+		config.WithCredentialsProvider(r2Credentials),
+	)
+
 	if err != nil {
 		return nil, ctx, err
 	}
 
-	client := s3.NewFromConfig(cfg)
-	return client, ctx, err
+	client := s3.NewFromConfig(
+		cfg,
+		func(options *s3.Options) {
+			options.BaseEndpoint = aws.String(endpoint)
+		},
+	)
+
+	return client, ctx, nil
 }
