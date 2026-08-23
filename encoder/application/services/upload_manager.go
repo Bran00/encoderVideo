@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -10,7 +11,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"golang.org/x/text/currency"
 )
 
 type VideoUpload struct {
@@ -45,6 +45,10 @@ func (vu *VideoUpload) UploadObject(
 		Key:    aws.String(path[1]),
 		Body:   f,
 	})
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -81,9 +85,8 @@ func (vu *VideoUpload) ProcessUpload(concurrency int, doneUpload chan string) er
 		return err
 	}
 
-	for process := 0; process < concurrency; process++ {
-		go vu.uploadWorker(in, <-returnChannel, uploadClient, ctx)
-
+	for range concurrency {
+		go vu.uploadWorker(in, returnChannel, uploadClient, ctx)
 	}
 
 	go func() {
@@ -93,14 +96,31 @@ func (vu *VideoUpload) ProcessUpload(concurrency int, doneUpload chan string) er
 		close(in)
 	}()
 
-}
-
-func (vu *VideoUpload) uploadWorker(in chan int, returnChan string, uploadClient *s3.Client, ctx context.Context) {
-
-	for x := range in {
-	
+	for r := range returnChannel {
+		if r != "" {
+			doneUpload <- r
+			break
+		}
 	}
 
+	return nil
+}
+
+func (vu *VideoUpload) uploadWorker(in chan int, returnChan chan string, uploadClient *s3.Client, ctx context.Context) {
+
+	for x := range in {
+		err := vu.UploadObject(vu.Paths[x], uploadClient, ctx)
+
+		if err != nil {
+			vu.Errors = append(vu.Errors, vu.Paths[x])
+			log.Printf("error during the upload: %v. Error: %v", vu.Paths[x], err)
+			returnChan <- err.Error()
+		}
+
+		returnChan <- ""
+	}
+
+	returnChan <- "uploaded completed"
 }
 
 func getClientUpload() (*s3.Client, context.Context, error) {
