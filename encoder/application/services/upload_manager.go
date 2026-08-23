@@ -4,11 +4,13 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"golang.org/x/text/currency"
 )
 
 type VideoUpload struct {
@@ -62,6 +64,43 @@ func (vu *VideoUpload) loadPaths() error {
 	}
 
 	return nil
+}
+
+func (vu *VideoUpload) ProcessUpload(concurrency int, doneUpload chan string) error {
+
+	in := make(chan int, runtime.NumCPU())
+	returnChannel := make(chan string)
+
+	err := vu.loadPaths()
+	if err != nil {
+		return err
+	}
+
+	uploadClient, ctx, err := getClientUpload()
+	if err != nil {
+		return err
+	}
+
+	for process := 0; process < concurrency; process++ {
+		go vu.uploadWorker(in, <-returnChannel, uploadClient, ctx)
+
+	}
+
+	go func() {
+		for x:= 0; x < len(vu.Paths); x++ {
+			in <- x
+		}
+		close(in)
+	}()
+
+}
+
+func (vu *VideoUpload) uploadWorker(in chan int, returnChan string, uploadClient *s3.Client, ctx context.Context) {
+
+	for x := range in {
+	
+	}
+
 }
 
 func getClientUpload() (*s3.Client, context.Context, error) {
