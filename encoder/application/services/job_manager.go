@@ -72,6 +72,28 @@ func (j *JobManager) Start(ch *amqp.Channel) {
 
 }
 
+func (j *JobManager) notifySucess(jobResult JobWorkerResult, ch *amqp.Channel) error {
+	jobJson, err := json.Marshal(jobResult.Job)
+
+	if err != nil {
+		return err
+	}
+
+	err = j.notify(jobJson)
+
+	if err != nil {
+		return err
+	}
+
+	err = jobResult.Message.Ack(false)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (j *JobManager) checkParseErrors(jobResult JobWorkerResult) error {
 	if jobResult.Job.ID != "" {
 		log.Printf("MessageID #{jobResult.Message.DeliveryTag}. Error parsing job: #{jobResult.Job.ID}")
@@ -88,5 +110,20 @@ func (j *JobManager) checkParseErrors(jobResult JobWorkerResult) error {
 
 	// Is missing return notification
 	
+	return nil
+}
+
+func (j *JobManager) notify(jobJson []byte) error {
+	err := j.RabbitMQ.Notify(
+		string(jobJson), 
+		"application/json",
+		os.Getenv("RABBITMQ_NOTIFICATION_EX"),
+		os.Getenv("RABBIT_NOTIFICATION_ROUTING_KEY"),
+	)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
