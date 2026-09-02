@@ -101,24 +101,34 @@ func (j *JobManager) checkParseErrors(jobResult JobWorkerResult) error {
 		log.Printf("MessageID #{jobResult.Message.DeliveryTag}. Error with messaage: #{jobResult.Job.Error}")
 	}
 
-	// errorMsg := JobNotificationError{
-	// 	Message: string(jobResult.Message.Body),
-	// 	Error: jobResult.Error.Error(),
-	// }
-	//
-	// jobJson, err := json.Marshal(errorMsg)
+	errorMsg := JobNotificationError{
+		Message: string(jobResult.Message.Body),
+		Error: jobResult.Error.Error(),
+	}
 
-	// Is missing return notification
-	
+	jobJson, err := json.Marshal(errorMsg)
+
+	err = j.notify(jobJson)
+
+	if err != nil {
+		return err
+	}
+
+	err = jobResult.Message.Reject(false)
+
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (j *JobManager) notify(jobJson []byte) error {
 	err := j.RabbitMQ.Notify(
-		string(jobJson), 
+		string(jobJson),
 		"application/json",
 		os.Getenv("RABBITMQ_NOTIFICATION_EX"),
-		os.Getenv("RABBIT_NOTIFICATION_ROUTING_KEY"),
+		os.Getenv("RABBITMQ_NOTIFICATION_ROUTING_KEY"),
 	)
 
 	if err != nil {
