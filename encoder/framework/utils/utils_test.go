@@ -1,9 +1,10 @@
 package utils_test
 
 import (
-	"encoder/framework/utils"
-	"github.com/stretchr/testify/require"
+	"enconder/framework/utils"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestIsJson(t *testing.T) {
